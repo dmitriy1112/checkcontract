@@ -1,18 +1,19 @@
 import wx
-from typing import Dict, Generator
+from typing import Dict, Generator, List
 
 
 class MainFrame(wx.Frame):
 
-    def __init__(self, *args, **kw):
-        super().__init__(*args, **kw)
+    def __init__(self, controller):
+        super().__init__(parent=None, title="Проверка договора", id=wx.ID_ANY, style=wx.DEFAULT_FRAME_STYLE)
 
-
+        self.__controller = controller
+        
     # dict of associate buttons with textctrls
 
         self.__buttons_data: Dict[wx.Button, wx.TextCtrl] = dict()
 
-    # -------------- STYLES -------------------
+    # -------------- TEXT STYLES -------------------
         self.__GREY_SMALL_ITALIC = wx.TextAttr(wx.Colour(161, 161, 161, alpha=wx.ALPHA_OPAQUE), font=wx.Font(wx.FontInfo(pointSize=8).Italic()))
         self.__BLACK_BIG_BOLD = wx.Font(wx.FontInfo(pointSize=12).Bold())
 
@@ -61,8 +62,8 @@ class MainFrame(wx.Frame):
 
     # ------ textctrl = Результаты ----------------
         
-        txt_results = wx.TextCtrl(main_panel, id=wx.ID_ANY, style = wx.TE_LEFT | wx.TE_READONLY | wx.TE_RICH2 | wx.TE_MULTILINE)
-        main_sizer.Add(txt_results, flag = wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, border=10, proportion=1)
+        self.__txt_results = wx.TextCtrl(main_panel, id=wx.ID_ANY, style = wx.TE_LEFT | wx.TE_READONLY | wx.TE_RICH2 | wx.TE_MULTILINE)
+        main_sizer.Add(self.__txt_results, flag = wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, border=10, proportion=1)
 
     # ------ button = Старт -----------------------
         
@@ -95,11 +96,25 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.__close_main_frame, file_exit)
         self.Bind(wx.EVT_BUTTON, self.__set_file_path, btn_open_pattern)
         self.Bind(wx.EVT_BUTTON, self.__set_file_path, btn_open_edited)
+        self.Bind(wx.EVT_BUTTON, self.__controller.get_marked_text, btn_start)
         settings_menu.Bind(wx.EVT_MENU_OPEN, self.__show_settings_menu)
 
     # ----- number generator -------------------------
         
         self.__num = self.__number_generator()
+
+    # ------ end constructor -------------------------
+        
+    # @property
+    # def txtctrl_results(self): # open textcontrol results
+    #     return self.__txt_results
+    
+    def set_result_text(self, fragments: List[tuple]):
+
+        for fragment in fragments:
+            if fragment.tag != "equal":
+                
+                self.__main_frame.txtctrl_results.Value += fragment.old_text + fragment.new_text + "\n"
 
 
     def __show_settings_menu(self, evt):
@@ -136,13 +151,3 @@ class MainFrame(wx.Frame):
         while True:
             yield num
             num += 1
-
-     
-       
-
-
-
-if __name__ == "__main__":
-    app = wx.App()
-    MainFrame(None, title="Проверка договора").Show()
-    app.MainLoop()
