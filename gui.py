@@ -15,7 +15,9 @@ class MainFrame(wx.Frame):
 
     # -------------- TEXT STYLES -------------------
         self.__GREY_SMALL_ITALIC = wx.TextAttr(wx.Colour(161, 161, 161, alpha=wx.ALPHA_OPAQUE), font=wx.Font(wx.FontInfo(pointSize=8).Italic()))
-        self.__BLACK_BIG_BOLD = wx.Font(wx.FontInfo(pointSize=12).Bold())
+        self.__BLACK_BIG_BOLD_UNDERLINED = wx.TextAttr(wx.Colour(0, 0, 0, alpha=wx.ALPHA_OPAQUE), alignment = wx.TEXT_ALIGNMENT_CENTRE, font=wx.Font(wx.FontInfo(pointSize=12).Underlined().Bold()))
+
+        self.__BIG_BOLD = wx.Font(wx.FontInfo(pointSize=12).Bold())
 
     # -----------------------------------------
 
@@ -58,7 +60,7 @@ class MainFrame(wx.Frame):
         
         lbl_results = wx.StaticText(main_panel, label = "Результаты: ")
         main_sizer.Add(lbl_results, flag = wx.TOP | wx.LEFT, border=10)
-        lbl_results.SetFont(self.__BLACK_BIG_BOLD)
+        lbl_results.SetFont(self.__BIG_BOLD)
 
     # ------ textctrl = Результаты ----------------
         
@@ -105,16 +107,28 @@ class MainFrame(wx.Frame):
 
     # ------ end constructor -------------------------
         
-    # @property
-    # def txtctrl_results(self): # open textcontrol results
-    #     return self.__txt_results
     
     def set_result_text(self, fragments: List[tuple]):
 
+        rus_tags = {"delete": "УДАЛЕНО", "replace": "ЗАМЕНЕНО", "insert": "ВСТАВЛЕНО"}
+
+        current_pos: int = 0
         for fragment in fragments:
             if fragment.tag != "equal":
+                self.__txt_results.AppendText(f"{rus_tags.get(fragment.tag)}\n\n")
+                lp: int = self.__txt_results.GetLastPosition()
+                self.__txt_results.SetStyle(current_pos, lp, self.__BLACK_BIG_BOLD_UNDERLINED)
+                current_pos += lp
+                self.__txt_results.AppendText(f"{fragment.text_before}")
+                self.__txt_results.AppendText(f"{fragment.old_text}")
+            # set style of deleted text here
+                self.__txt_results.AppendText(f"{fragment.new_text}")
+            # set style of inserted text here
+                self.__txt_results.AppendText(f"{fragment.text_after}")
+
+
+        
                 
-                self.__main_frame.txtctrl_results.Value += fragment.old_text + fragment.new_text + "\n"
 
 
     def __show_settings_menu(self, evt):

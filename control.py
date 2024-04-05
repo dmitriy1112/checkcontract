@@ -14,9 +14,8 @@ class Controller:
         self.__app.MainLoop()
 
     def get_marked_text(self, evt):
-
         fragments: List[tuple] = process.get_marked_fragments("samples\\contract.docx", "samples\\edited.docx", 50, 50, "9. Адреса, реквизиты и подписи сторон")
-
+        self.__main_frame.set_result_text(fragments)
 
 
 
