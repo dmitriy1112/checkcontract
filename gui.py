@@ -16,6 +16,8 @@ class MainFrame(wx.Frame):
     # -------------- TEXT STYLES -------------------
         self.__GREY_SMALL_ITALIC = wx.TextAttr(wx.Colour(161, 161, 161, alpha=wx.ALPHA_OPAQUE), font=wx.Font(wx.FontInfo(pointSize=8).Italic()))
         self.__BLACK_BIG_BOLD_UNDERLINED = wx.TextAttr(wx.Colour(0, 0, 0, alpha=wx.ALPHA_OPAQUE), alignment = wx.TEXT_ALIGNMENT_CENTRE, font=wx.Font(wx.FontInfo(pointSize=12).Underlined().Bold()))
+        self.__RED_MIDDLE_STRIKED = wx.TextAttr(wx.Colour(255, 0, 0, alpha=wx.ALPHA_OPAQUE), alignment = wx.TEXT_ALIGNMENT_CENTRE, font=wx.Font(wx.FontInfo(pointSize=10).Strikethrough()))
+        self.__BLUE_MIDDLE_BOLD = wx.TextAttr(wx.Colour(0, 0, 255, alpha=wx.ALPHA_OPAQUE), alignment = wx.TEXT_ALIGNMENT_CENTRE, font=wx.Font(wx.FontInfo(pointSize=10).Bold()))
 
         self.__BIG_BOLD = wx.Font(wx.FontInfo(pointSize=12).Bold())
 
@@ -116,15 +118,24 @@ class MainFrame(wx.Frame):
         for fragment in fragments:
             if fragment.tag != "equal":
                 self.__txt_results.AppendText(f"{rus_tags.get(fragment.tag)}\n\n")
+                
                 lp: int = self.__txt_results.GetLastPosition()
                 self.__txt_results.SetStyle(current_pos, lp, self.__BLACK_BIG_BOLD_UNDERLINED)
-                current_pos += lp
-                self.__txt_results.AppendText(f"{fragment.text_before}")
+                # current_pos = lp
+                
+                self.__txt_results.AppendText(f"{fragment.txt_before}")
+                current_pos = self.__txt_results.GetLastPosition()
                 self.__txt_results.AppendText(f"{fragment.old_text}")
-            # set style of deleted text here
+            # set style of deleted text
+                lp: int = self.__txt_results.GetLastPosition()
+                self.__txt_results.SetStyle(current_pos, lp, self.__RED_MIDDLE_STRIKED)
+
+                current_pos = self.__txt_results.GetLastPosition()
                 self.__txt_results.AppendText(f"{fragment.new_text}")
-            # set style of inserted text here
-                self.__txt_results.AppendText(f"{fragment.text_after}")
+            # set style of inserted text
+                lp: int = self.__txt_results.GetLastPosition()
+                self.__txt_results.SetStyle(current_pos, lp, self.__BLUE_MIDDLE_BOLD)
+                self.__txt_results.AppendText(f"{fragment.txt_after}\n\n")
 
 
         

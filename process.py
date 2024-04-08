@@ -71,7 +71,7 @@ def get_marked_fragments(pattern_path: str, edited_path: str, numsym_before: int
     
     seq_mtcher = difflib.SequenceMatcher(a = pattern_txt, b = edited_txt)
     fragments: List[Fragment] = [] # type: ignore
-    Fragment = namedtuple("Fragment", ["tag", "txt_before", "old_text", "new_text", "text_after"])
+    Fragment = namedtuple("Fragment", ["tag", "txt_before", "old_text", "new_text", "txt_after"])
 
     for tag, i1, i2, j1, j2 in seq_mtcher.get_opcodes():
 
