@@ -1,5 +1,5 @@
 import wx
-from typing import Dict, Generator, List
+from typing import Dict, Generator, List, Self
 
 
 class MainFrame(wx.Frame):
@@ -31,14 +31,14 @@ class MainFrame(wx.Frame):
     # ------ pattern contract file ----------
         pattern_file_dg_sizer = wx.BoxSizer(orient=wx.HORIZONTAL)
 
-        txt_pattern = wx.TextCtrl(main_panel, id=wx.ID_ANY, value="Файл исходного документа", style = wx.TE_LEFT | wx.TE_READONLY | wx.TE_RICH2)
-        txt_pattern.SetStyle(0, len(txt_pattern.Value), self.__GREY_SMALL_ITALIC)
+        self.__txt_pattern = wx.TextCtrl(main_panel, id=wx.ID_ANY, value="Файл исходного документа", style = wx.TE_LEFT | wx.TE_READONLY | wx.TE_RICH2, validator = PathTxtCtrlValidator())
+        self.__txt_pattern.SetStyle(0, len(self.__txt_pattern.Value), self.__GREY_SMALL_ITALIC)
         btn_open_pattern = wx.Button(main_panel, id=wx.ID_ANY, label="Загрузить")
 
         # associate button with TextCtrl
-        self.__buttons_data[btn_open_pattern] = txt_pattern
+        self.__buttons_data[btn_open_pattern] = self.__txt_pattern
 
-        pattern_file_dg_sizer.AddMany([(txt_pattern, 1, wx.RIGHT, 5), (btn_open_pattern,)])
+        pattern_file_dg_sizer.AddMany([(self.__txt_pattern, 1, wx.RIGHT, 5), (btn_open_pattern,)])
 
         main_sizer.Add(pattern_file_dg_sizer, flag = wx.ALL | wx.EXPAND, border=10)
 
@@ -47,14 +47,14 @@ class MainFrame(wx.Frame):
     # ------ edited contract file ----------
         edited_file_dg_sizer = wx.BoxSizer(orient=wx.HORIZONTAL)
 
-        txt_edited = wx.TextCtrl(main_panel, id=wx.ID_ANY, value="Файл редактированного документа", style = wx.TE_LEFT | wx.TE_READONLY | wx.TE_RICH2)
-        txt_edited.SetStyle(0, len(txt_edited.Value), self.__GREY_SMALL_ITALIC)
+        self.__txt_edited = wx.TextCtrl(main_panel, id=wx.ID_ANY, value="Файл редактированного документа", style = wx.TE_LEFT | wx.TE_READONLY | wx.TE_RICH2, validator = PathTxtCtrlValidator())
+        self.__txt_edited.SetStyle(0, len(self.__txt_edited.Value), self.__GREY_SMALL_ITALIC)
         btn_open_edited = wx.Button(main_panel, id=wx.ID_ANY, label="Загрузить")
 
         # associate button with TextCtrl
-        self.__buttons_data[btn_open_edited] = txt_edited
+        self.__buttons_data[btn_open_edited] = self.__txt_edited
 
-        edited_file_dg_sizer.AddMany([(txt_edited, 1, wx.RIGHT, 5), (btn_open_edited,)])
+        edited_file_dg_sizer.AddMany([(self.__txt_edited, 1, wx.RIGHT, 5), (btn_open_edited,)])
 
         main_sizer.Add(edited_file_dg_sizer, flag = wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, border=10)
 
@@ -99,12 +99,14 @@ class MainFrame(wx.Frame):
         self.SetMinSize(wx.Size(550, 500))
         self.SetMaxSize(wx.Size(800, 700))
 
+        self.InitDialog()
+
     # ----- bindings ------------------------------
         self.Bind(wx.EVT_MENU, self.__export_to_docx, file_export)
         self.Bind(wx.EVT_MENU, self.__close_main_frame, file_exit)
         self.Bind(wx.EVT_BUTTON, self.__set_file_path, btn_open_pattern)
         self.Bind(wx.EVT_BUTTON, self.__set_file_path, btn_open_edited)
-        self.Bind(wx.EVT_BUTTON, self.__controller.get_marked_text, btn_start)
+        self.Bind(wx.EVT_BUTTON, self.__on_start, btn_start)
         settings_menu.Bind(wx.EVT_MENU_OPEN, self.__show_settings_menu)
 
     # ----- number generator -------------------------
@@ -112,6 +114,11 @@ class MainFrame(wx.Frame):
         self.__num = self.__number_generator()
 
     # ------ end constructor -------------------------
+
+    def __on_start(self, evt):
+
+        if self.Validate() and self.TransferDataFromWindow():
+            self.__controller.get_marked_text(self.__txt_pattern.GetValue(), self.__txt_edited.GetValue())
         
     
     def set_result_text(self, fragments: List[tuple]):
@@ -122,9 +129,7 @@ class MainFrame(wx.Frame):
 
         # current_pos: int = 0
         for fragment in fragments:
-
             if fragment.tag != "equal":
-
             # set tag
                 self.__set_result_text(f"{rus_tags.get(fragment.tag)}\n\n", self.__BLACK_BIG_BOLD_UNDERLINED)
             # set txt_before    
@@ -144,12 +149,6 @@ class MainFrame(wx.Frame):
 
         if style is not None:
             self.__txt_results.SetStyle(current_pos, self.__txt_results.GetLastPosition(), style)
-
-                
-
-
-        
-                
 
 
     def __show_settings_menu(self, evt):
@@ -186,3 +185,33 @@ class MainFrame(wx.Frame):
         while True:
             yield num
             num += 1
+
+class PathTxtCtrlValidator(wx.Validator):
+
+    def Clone(self) -> Self:
+        return PathTxtCtrlValidator()
+    
+    def Validate(self, parent) -> bool:
+         
+         textCtrl: wx.TextCtrl = self.GetWindow()
+         text: str = textCtrl.GetValue()
+         
+         if text == "Файл редактированного документа" or text == "Файл исходного документа":
+             wx.MessageBox("Нужно выбрать файл docx!", "Error")
+             textCtrl.SetBackgroundColour("pink")
+             textCtrl.SetFocus()
+             textCtrl.Refresh()
+             return False
+         else:
+             textCtrl.SetBackgroundColour(wx.Colour(255, 255, 255))
+             textCtrl.Refresh()
+             return True
+    
+    def TransferToWindow(self) -> bool:
+        return True
+    
+    def TransferFromWindow(self) -> bool:
+        return True
+    
+
+

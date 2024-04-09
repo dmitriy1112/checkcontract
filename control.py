@@ -13,8 +13,8 @@ class Controller:
         self.__main_frame.Show()
         self.__app.MainLoop()
 
-    def get_marked_text(self, evt):
-        fragments: List[tuple] = process.get_marked_fragments("samples\\contract.docx", "samples\\edited.docx", 50, 50, "9. Адреса, реквизиты и подписи сторон")
+    def get_marked_text(self, path_pattern: str, path_edited: str):
+        fragments: List[tuple] = process.get_marked_fragments(path_pattern, path_edited, 50, 50, "9. Адреса, реквизиты и подписи сторон")
         self.__main_frame.set_result_text(fragments)
 
 
