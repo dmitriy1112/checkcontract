@@ -77,10 +77,10 @@ def get_marked_fragments(pattern_path: str, edited_path: str, numsym_before: int
 
         if tag == "equal":
             fragments.append(Fragment(tag, 
-                                      f"...{pattern_txt[max(0, (j1-numsym_before)):j1]}", 
+                                      f"...{pattern_txt[max(0, (i1-numsym_before)):i1]}", 
                                       pattern_txt[i1:i2], 
                                       "", 
-                                      f"{pattern_txt[j2:min((j2+numsym_after), len(edited_txt))]}..."))
+                                      f"{pattern_txt[i2:min((j2+numsym_after), len(edited_txt))]}..."))
         elif tag == "insert":
             fragments.append(Fragment(tag, 
                                       f"...{edited_txt[max(0, (j1-numsym_before)):j1]}", 

@@ -18,8 +18,10 @@ class MainFrame(wx.Frame):
         self.__BLACK_BIG_BOLD_UNDERLINED = wx.TextAttr(wx.Colour(0, 0, 0, alpha=wx.ALPHA_OPAQUE), alignment = wx.TEXT_ALIGNMENT_CENTRE, font=wx.Font(wx.FontInfo(pointSize=12).Underlined().Bold()))
         self.__RED_MIDDLE_STRIKED = wx.TextAttr(wx.Colour(255, 0, 0, alpha=wx.ALPHA_OPAQUE), alignment = wx.TEXT_ALIGNMENT_CENTRE, font=wx.Font(wx.FontInfo(pointSize=10).Strikethrough()))
         self.__BLUE_MIDDLE_BOLD = wx.TextAttr(wx.Colour(0, 0, 255, alpha=wx.ALPHA_OPAQUE), alignment = wx.TEXT_ALIGNMENT_CENTRE, font=wx.Font(wx.FontInfo(pointSize=10).Bold()))
+        self.__DEFAULT = wx.TextAttr(wx.Colour(0, 0, 0, alpha=wx.ALPHA_OPAQUE), alignment = wx.TEXT_ALIGNMENT_CENTRE, font=wx.Font(wx.FontInfo(pointSize=10)))
 
         self.__BIG_BOLD = wx.Font(wx.FontInfo(pointSize=12).Bold())
+
 
     # -----------------------------------------
 
@@ -69,6 +71,8 @@ class MainFrame(wx.Frame):
         self.__txt_results = wx.TextCtrl(main_panel, id=wx.ID_ANY, style = wx.TE_LEFT | wx.TE_READONLY | wx.TE_RICH2 | wx.TE_MULTILINE)
         main_sizer.Add(self.__txt_results, flag = wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, border=10, proportion=1)
 
+        self.__txt_results.SetDefaultStyle(self.__DEFAULT)
+
     # ------ button = Старт -----------------------
         
         btn_start = wx.Button(main_panel, id=wx.ID_ANY, label="Старт")
@@ -112,30 +116,36 @@ class MainFrame(wx.Frame):
     
     def set_result_text(self, fragments: List[tuple]):
 
+        self.__txt_results.Clear()
+
         rus_tags = {"delete": "УДАЛЕНО", "replace": "ЗАМЕНЕНО", "insert": "ВСТАВЛЕНО"}
 
-        current_pos: int = 0
+        # current_pos: int = 0
         for fragment in fragments:
-            if fragment.tag != "equal":
-                self.__txt_results.AppendText(f"{rus_tags.get(fragment.tag)}\n\n")
-                
-                lp: int = self.__txt_results.GetLastPosition()
-                self.__txt_results.SetStyle(current_pos, lp, self.__BLACK_BIG_BOLD_UNDERLINED)
-                # current_pos = lp
-                
-                self.__txt_results.AppendText(f"{fragment.txt_before}")
-                current_pos = self.__txt_results.GetLastPosition()
-                self.__txt_results.AppendText(f"{fragment.old_text}")
-            # set style of deleted text
-                lp: int = self.__txt_results.GetLastPosition()
-                self.__txt_results.SetStyle(current_pos, lp, self.__RED_MIDDLE_STRIKED)
 
-                current_pos = self.__txt_results.GetLastPosition()
-                self.__txt_results.AppendText(f"{fragment.new_text}")
-            # set style of inserted text
-                lp: int = self.__txt_results.GetLastPosition()
-                self.__txt_results.SetStyle(current_pos, lp, self.__BLUE_MIDDLE_BOLD)
-                self.__txt_results.AppendText(f"{fragment.txt_after}\n\n")
+            if fragment.tag != "equal":
+
+            # set tag
+                self.__set_result_text(f"{rus_tags.get(fragment.tag)}\n\n", self.__BLACK_BIG_BOLD_UNDERLINED)
+            # set txt_before    
+                self.__set_result_text(f"{fragment.txt_before}")                      
+            # set old_text
+                self.__set_result_text(f"{fragment.old_text}", self.__RED_MIDDLE_STRIKED)             
+            # set new_text
+                self.__set_result_text(fragment.new_text, self.__BLUE_MIDDLE_BOLD)
+            # set text_after
+                self.__set_result_text(f"{fragment.txt_after}\n\n")
+                
+              
+    def __set_result_text(self, text: str, style: wx.TextAttr = None) -> None:
+
+        current_pos = self.__txt_results.GetLastPosition()
+        self.__txt_results.AppendText(text)
+
+        if style is not None:
+            self.__txt_results.SetStyle(current_pos, self.__txt_results.GetLastPosition(), style)
+
+                
 
 
         
