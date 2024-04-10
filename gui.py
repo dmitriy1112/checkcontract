@@ -1,20 +1,21 @@
 import wx
-from typing import Dict, Generator, List, Self
+from typing import Dict, Generator, List
 
 
 class MainFrame(wx.Frame):
 
-    def __init__(self, controller):
+    def __init__(self, controller) -> None:
         super().__init__(parent=None, title="Проверка договора", id=wx.ID_ANY, style=wx.DEFAULT_FRAME_STYLE)
 
         self.__controller = controller
+        self.__current_fragments = None
         
     # dict of associate buttons with textctrls
 
         self.__buttons_data: Dict[wx.Button, wx.TextCtrl] = dict()
 
     # -------------- TEXT STYLES -------------------
-        self.__GREY_SMALL_ITALIC = wx.TextAttr(wx.Colour(161, 161, 161, alpha=wx.ALPHA_OPAQUE), font=wx.Font(wx.FontInfo(pointSize=8).Italic()))
+        self.__GREY_SMALL_ITALIC = wx.TextAttr(wx.Colour(150, 150, 150, alpha=wx.ALPHA_OPAQUE), font=wx.Font(wx.FontInfo(pointSize=8).Italic()))
         self.__BLACK_BIG_BOLD_UNDERLINED = wx.TextAttr(wx.Colour(0, 0, 0, alpha=wx.ALPHA_OPAQUE), alignment = wx.TEXT_ALIGNMENT_CENTRE, font=wx.Font(wx.FontInfo(pointSize=12).Underlined().Bold()))
         self.__RED_MIDDLE_STRIKED = wx.TextAttr(wx.Colour(255, 0, 0, alpha=wx.ALPHA_OPAQUE), alignment = wx.TEXT_ALIGNMENT_CENTRE, font=wx.Font(wx.FontInfo(pointSize=10).Strikethrough()))
         self.__BLUE_MIDDLE_BOLD = wx.TextAttr(wx.Colour(0, 0, 255, alpha=wx.ALPHA_OPAQUE), alignment = wx.TEXT_ALIGNMENT_CENTRE, font=wx.Font(wx.FontInfo(pointSize=10).Bold()))
@@ -62,7 +63,7 @@ class MainFrame(wx.Frame):
 
     # ------ label = "Результаты" ----------------
         
-        lbl_results = wx.StaticText(main_panel, label = "Результаты: ")
+        lbl_results = wx.StaticText(main_panel, label = "Предпросмотр: ")
         main_sizer.Add(lbl_results, flag = wx.TOP | wx.LEFT, border=10)
         lbl_results.SetFont(self.__BIG_BOLD)
 
@@ -115,13 +116,15 @@ class MainFrame(wx.Frame):
 
     # ------ end constructor -------------------------
 
-    def __on_start(self, evt):
+    def __on_start(self, evt) -> None:
 
         if self.Validate() and self.TransferDataFromWindow():
             self.__controller.get_marked_text(self.__txt_pattern.GetValue(), self.__txt_edited.GetValue())
         
     
-    def set_result_text(self, fragments: List[tuple]):
+    def set_result_text(self, fragments: List[tuple]) -> None:
+
+        self.__current_fragments = fragments
 
         self.__txt_results.Clear()
 
@@ -140,8 +143,7 @@ class MainFrame(wx.Frame):
                 self.__set_result_text(fragment.new_text, self.__BLUE_MIDDLE_BOLD)
             # set text_after
                 self.__set_result_text(f"{fragment.txt_after}\n\n")
-                
-              
+                         
     def __set_result_text(self, text: str, style: wx.TextAttr = None) -> None:
 
         current_pos = self.__txt_results.GetLastPosition()
@@ -149,7 +151,6 @@ class MainFrame(wx.Frame):
 
         if style is not None:
             self.__txt_results.SetStyle(current_pos, self.__txt_results.GetLastPosition(), style)
-
 
     def __show_settings_menu(self, evt):
         # open a frame with settings dialog
@@ -162,7 +163,7 @@ class MainFrame(wx.Frame):
             if fd.ShowModal() == wx.ID_CANCEL:
                 return     # the user changed their mind
             
-            print("Path = %s" % fd.GetPath())
+            self.__controller.make_report(self.__current_fragments, fd.GetPath())
 
     def __close_main_frame(self, evt):
         self.Destroy()
@@ -172,7 +173,7 @@ class MainFrame(wx.Frame):
         with wx.FileDialog(self, style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST, message="Открыть файл docx", wildcard="DOCX files (*.docx)|*.docx") as fd:
 
             if fd.ShowModal() == wx.ID_CANCEL:
-                return     # the user changed their mind
+                return     # the user changed his mind
 
             # Proceed loading the file chosen by the user
             txt: wx.TextCtrl = self.__buttons_data.get(evt.GetEventObject())
@@ -188,7 +189,7 @@ class MainFrame(wx.Frame):
 
 class PathTxtCtrlValidator(wx.Validator):
 
-    def Clone(self) -> Self:
+    def Clone(self): # type: ignore
         return PathTxtCtrlValidator()
     
     def Validate(self, parent) -> bool:

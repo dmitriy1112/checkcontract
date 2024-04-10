@@ -33,9 +33,9 @@ def __get_contract_text(parags: Any, endmark: str) -> str:
             txt += f"{p.text}\n"
     return txt
 
-def make_report_txt(pattern_txt: str, edited_txt: str) -> docx.Document:
+def make_report_docx(fragments: List[tuple], path_to_save: str) -> None:
 
-    seq_mtcher = difflib.SequenceMatcher(a = pattern_txt, b = edited_txt)
+    # seq_mtcher = difflib.SequenceMatcher(a = pattern_txt, b = edited_txt)
 
     doc_report = docx.Document()
     parag = doc_report.add_paragraph("") # All in one paragraph
@@ -48,21 +48,31 @@ def make_report_txt(pattern_txt: str, edited_txt: str) -> docx.Document:
     REPLACE_FONT = docx.shared.RGBColor(0xFF, 0x88, 0x00)
     DELETE_FONT = docx.shared.RGBColor(0xFF, 0x00, 0x00)
 
-    for tag, i1, i2, j1, j2 in seq_mtcher.get_opcodes():
+    for fragment in fragments:
+        if fragment.tag == "equal":
+            __add_specified_run(parag, fragment.old_text)
+        elif fragment.tag == "insert":
+            __add_specified_run(parag, f"{fragment.new_text}", bold=True, colorRGB=INSERT_FONT)
+        elif fragment.tag == "delete":
+            __add_specified_run(parag, f"{fragment.old_text}", bold=True, colorRGB=DELETE_FONT, strike=True)
+        elif fragment.tag == "replace":
+            __add_specified_run(parag, f"{fragment.old_text}", bold=True, colorRGB=REPLACE_FONT, strike=True)
+            __add_specified_run(parag, f" ---> ", bold=True, colorRGB=REPLACE_FONT)
+            __add_specified_run(parag, f"{fragment.new_text}", bold=True, colorRGB=REPLACE_FONT)
 
         # all cases of editing marked in accordingly styles of runs
-        if tag == "equal":
-            __add_specified_run(parag, pattern_txt[i1:i2])
-        elif tag == "insert":
-            __add_specified_run(parag, f"{edited_txt[j1:j2]}", bold=True, colorRGB=INSERT_FONT)
-        elif tag == "delete":
-            __add_specified_run(parag, f"{pattern_txt[i1:i2]}", bold=True, colorRGB=DELETE_FONT, strike=True)
-        elif tag == "replace":
-            __add_specified_run(parag, f"{pattern_txt[i1:i2]}", bold=True, colorRGB=REPLACE_FONT, strike=True)
-            __add_specified_run(parag, f" ---> ", bold=True, colorRGB=REPLACE_FONT)
-            __add_specified_run(parag, f"{edited_txt[j1:j2]}", bold=True, colorRGB=REPLACE_FONT)
+    # if tag == "equal":
+    #     __add_specified_run(parag, pattern_txt[i1:i2])
+    # elif tag == "insert":
+    #     __add_specified_run(parag, f"{edited_txt[j1:j2]}", bold=True, colorRGB=INSERT_FONT)
+    # elif tag == "delete":
+    #     __add_specified_run(parag, f"{pattern_txt[i1:i2]}", bold=True, colorRGB=DELETE_FONT, strike=True)
+    # elif tag == "replace":
+    #     __add_specified_run(parag, f"{pattern_txt[i1:i2]}", bold=True, colorRGB=REPLACE_FONT, strike=True)
+    #     __add_specified_run(parag, f" ---> ", bold=True, colorRGB=REPLACE_FONT)
+    #     __add_specified_run(parag, f"{edited_txt[j1:j2]}", bold=True, colorRGB=REPLACE_FONT)
 
-    return doc_report
+    doc_report.save(path_to_save)
 
 def get_marked_fragments(pattern_path: str, edited_path: str, numsym_before: int, numsym_after: int, end_mark: str) -> List[tuple]:
 
@@ -101,10 +111,3 @@ def get_marked_fragments(pattern_path: str, edited_path: str, numsym_before: int
                                       f"{edited_txt[j2:min((j2+numsym_after), len(edited_txt))]}..."))
 
     return fragments
-
-
-# res = get_marked_fragments("samples\\contract.docx", "samples\\edited.docx", 50, 50, "9. Адреса, реквизиты и подписи сторон")
-# print(res)
-
-# doc_report = make_report_txt(pattern_txt, edited_txt)
-# doc_report.save("report.docx")
