@@ -114,6 +114,8 @@ class MainFrame(wx.Frame):
         
         self.__num = self.__number_generator()
 
+        self.Show()
+
     # ------ end constructor -------------------------
 
     def __on_start(self, evt) -> None:
@@ -121,7 +123,6 @@ class MainFrame(wx.Frame):
         if self.Validate() and self.TransferDataFromWindow():
             self.__controller.get_marked_text(self.__txt_pattern.GetValue(), self.__txt_edited.GetValue())
         
-    
     def set_result_text(self, fragments: List[tuple]) -> None:
 
         self.__current_fragments = fragments
@@ -154,16 +155,18 @@ class MainFrame(wx.Frame):
 
     def __show_settings_menu(self, evt):
         # open a frame with settings dialog
-        print("open settings frame")
+        SettingsFrame(self)
 
-    def __export_to_docx(self, evt):
+    def __export_to_docx(self, evt) -> None:
 
         with wx.FileDialog(self, style=wx.FD_SAVE, message="Сохранение файла docx", wildcard="DOCX files (*.docx)|*.docx", defaultFile=f"Отчет{next(self.__num)}") as fd:
 
             if fd.ShowModal() == wx.ID_CANCEL:
                 return     # the user changed their mind
-            
+        if self.__current_fragments is not None:    
             self.__controller.make_report(self.__current_fragments, fd.GetPath())
+        else:
+            wx.MessageBox(message="Сравнение документов не было выполнено! Нажмите 'Старт'. Отчет не сохранен", caption="Ошибка", style=wx.ICON_WARNING | wx.OK_DEFAULT)
 
     def __close_main_frame(self, evt):
         self.Destroy()
@@ -187,6 +190,13 @@ class MainFrame(wx.Frame):
             yield num
             num += 1
 
+class SettingsFrame(wx.Frame):
+
+    def __init__(self, parent):
+        super().__init__(parent=None, title="Настройки", id=wx.ID_ANY, style=wx.DEFAULT_FRAME_STYLE)
+
+        self.Show()
+
 class PathTxtCtrlValidator(wx.Validator):
 
     def Clone(self): # type: ignore
@@ -198,7 +208,7 @@ class PathTxtCtrlValidator(wx.Validator):
          text: str = textCtrl.GetValue()
          
          if text == "Файл редактированного документа" or text == "Файл исходного документа":
-             wx.MessageBox("Нужно выбрать файл docx!", "Error")
+             wx.MessageBox("Нужно выбрать файл docx!", "Ошибка", style=wx.ICON_WARNING | wx.OK_DEFAULT)
              textCtrl.SetBackgroundColour("pink")
              textCtrl.SetFocus()
              textCtrl.Refresh()
@@ -213,6 +223,5 @@ class PathTxtCtrlValidator(wx.Validator):
     
     def TransferFromWindow(self) -> bool:
         return True
-    
 
 

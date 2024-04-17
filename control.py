@@ -9,9 +9,8 @@ class Controller:
         self.__main_frame = gui.MainFrame(controller=self)
         # self.__current_fragments = None
 
-
     def run_app(self) -> None:
-        self.__main_frame.Show()
+        # self.__main_frame.Show()
         self.__app.MainLoop()
 
     def get_marked_text(self, path_pattern: str, path_edited: str):
