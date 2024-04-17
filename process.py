@@ -35,8 +35,6 @@ def __get_contract_text(parags: Any, endmark: str) -> str:
 
 def make_report_docx(fragments: List[tuple], path_to_save: str) -> None:
 
-    # seq_mtcher = difflib.SequenceMatcher(a = pattern_txt, b = edited_txt)
-
     doc_report = docx.Document()
     parag = doc_report.add_paragraph("") # All in one paragraph
     
@@ -59,18 +57,6 @@ def make_report_docx(fragments: List[tuple], path_to_save: str) -> None:
             __add_specified_run(parag, f"{fragment.old_text}", bold=True, colorRGB=REPLACE_FONT, strike=True)
             __add_specified_run(parag, f" ---> ", bold=True, colorRGB=REPLACE_FONT)
             __add_specified_run(parag, f"{fragment.new_text}", bold=True, colorRGB=REPLACE_FONT)
-
-        # all cases of editing marked in accordingly styles of runs
-    # if tag == "equal":
-    #     __add_specified_run(parag, pattern_txt[i1:i2])
-    # elif tag == "insert":
-    #     __add_specified_run(parag, f"{edited_txt[j1:j2]}", bold=True, colorRGB=INSERT_FONT)
-    # elif tag == "delete":
-    #     __add_specified_run(parag, f"{pattern_txt[i1:i2]}", bold=True, colorRGB=DELETE_FONT, strike=True)
-    # elif tag == "replace":
-    #     __add_specified_run(parag, f"{pattern_txt[i1:i2]}", bold=True, colorRGB=REPLACE_FONT, strike=True)
-    #     __add_specified_run(parag, f" ---> ", bold=True, colorRGB=REPLACE_FONT)
-    #     __add_specified_run(parag, f"{edited_txt[j1:j2]}", bold=True, colorRGB=REPLACE_FONT)
 
     doc_report.save(path_to_save)
 

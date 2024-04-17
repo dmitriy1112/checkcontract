@@ -1,11 +1,23 @@
 import wx
 from typing import Dict, Generator, List
 
+# Data
+TITLE = "Проверка договора"
+TITLE_SETTINGS = "Настройки"
+TXT_PATTERN_INIT_TEXT = "Файл исходного документа"
+TXT_EDITED_INIT_TEXT = "Файл редактированного документа"
+BTN_OPEN_LABEL = "Загрузить"
+BTN_START_LABEL = "Старт"
+LABEL_RESULTS = "Предпросмотр: "
+SUBMENU_EXPORT_LABEL = "Экспорт в docx"
+MENU_FILE_LABEL = "&Файл"
+MENU_SETTINGS_LABEL = "&Настройки"
+
 
 class MainFrame(wx.Frame):
 
     def __init__(self, controller) -> None:
-        super().__init__(parent=None, title="Проверка договора", id=wx.ID_ANY, style=wx.DEFAULT_FRAME_STYLE)
+        super().__init__(parent=None, title=TITLE, id=wx.ID_ANY, style=wx.DEFAULT_FRAME_STYLE)
 
         self.__controller = controller
         self.__current_fragments = None
@@ -32,9 +44,9 @@ class MainFrame(wx.Frame):
     # ------ pattern contract file ----------
         pattern_file_dg_sizer = wx.BoxSizer(orient=wx.HORIZONTAL)
 
-        self.__txt_pattern = wx.TextCtrl(main_panel, id=wx.ID_ANY, value="Файл исходного документа", style = wx.TE_LEFT | wx.TE_READONLY | wx.TE_RICH2, validator = PathTxtCtrlValidator())
+        self.__txt_pattern = wx.TextCtrl(main_panel, id=wx.ID_ANY, value=TXT_PATTERN_INIT_TEXT, style = wx.TE_LEFT | wx.TE_READONLY | wx.TE_RICH2, validator = PathTxtCtrlValidator())
         self.__txt_pattern.SetStyle(0, len(self.__txt_pattern.Value), self.__GREY_SMALL_ITALIC)
-        btn_open_pattern = wx.Button(main_panel, id=wx.ID_ANY, label="Загрузить")
+        btn_open_pattern = wx.Button(main_panel, id=wx.ID_ANY, label=BTN_OPEN_LABEL)
 
         # associate button with TextCtrl
         self.__buttons_data[btn_open_pattern] = self.__txt_pattern
@@ -48,9 +60,9 @@ class MainFrame(wx.Frame):
     # ------ edited contract file ----------
         edited_file_dg_sizer = wx.BoxSizer(orient=wx.HORIZONTAL)
 
-        self.__txt_edited = wx.TextCtrl(main_panel, id=wx.ID_ANY, value="Файл редактированного документа", style = wx.TE_LEFT | wx.TE_READONLY | wx.TE_RICH2, validator = PathTxtCtrlValidator())
+        self.__txt_edited = wx.TextCtrl(main_panel, id=wx.ID_ANY, value=TXT_EDITED_INIT_TEXT, style = wx.TE_LEFT | wx.TE_READONLY | wx.TE_RICH2, validator = PathTxtCtrlValidator())
         self.__txt_edited.SetStyle(0, len(self.__txt_edited.Value), self.__GREY_SMALL_ITALIC)
-        btn_open_edited = wx.Button(main_panel, id=wx.ID_ANY, label="Загрузить")
+        btn_open_edited = wx.Button(main_panel, id=wx.ID_ANY, label=BTN_OPEN_LABEL)
 
         # associate button with TextCtrl
         self.__buttons_data[btn_open_edited] = self.__txt_edited
@@ -63,7 +75,7 @@ class MainFrame(wx.Frame):
 
     # ------ label = "Результаты" ----------------
         
-        lbl_results = wx.StaticText(main_panel, label = "Предпросмотр: ")
+        lbl_results = wx.StaticText(main_panel, label = LABEL_RESULTS)
         main_sizer.Add(lbl_results, flag = wx.TOP | wx.LEFT, border=10)
         lbl_results.SetFont(self.__BIG_BOLD)
 
@@ -76,20 +88,20 @@ class MainFrame(wx.Frame):
 
     # ------ button = Старт -----------------------
         
-        btn_start = wx.Button(main_panel, id=wx.ID_ANY, label="Старт")
+        btn_start = wx.Button(main_panel, id=wx.ID_ANY, label=BTN_START_LABEL)
         main_sizer.Add(btn_start, flag = wx.LEFT | wx.BOTTOM | wx.RIGHT | wx.EXPAND, border=10)
 
     # ------ menu -----------------------------------
         
         file_menu = wx.Menu()
-        file_export = file_menu.Append(id=wx.ID_ANY, item="Экспорт в docx")
+        file_export = file_menu.Append(id=wx.ID_ANY, item=SUBMENU_EXPORT_LABEL)
         file_exit = file_menu.Append(id=wx.ID_EXIT)
 
         settings_menu = wx.Menu()
 
         menuBar = wx.MenuBar()
-        menuBar.Append(file_menu, "&Файл")
-        menuBar.Append(settings_menu, "&Настройки")
+        menuBar.Append(file_menu, MENU_FILE_LABEL)
+        menuBar.Append(settings_menu, MENU_SETTINGS_LABEL)
 
         self.SetMenuBar(menuBar)
 
@@ -131,21 +143,20 @@ class MainFrame(wx.Frame):
 
         rus_tags = {"delete": "УДАЛЕНО", "replace": "ЗАМЕНЕНО", "insert": "ВСТАВЛЕНО"}
 
-        # current_pos: int = 0
         for fragment in fragments:
             if fragment.tag != "equal":
             # set tag
-                self.__set_result_text(f"{rus_tags.get(fragment.tag)}\n\n", self.__BLACK_BIG_BOLD_UNDERLINED)
+                self.__set_text(f"{rus_tags.get(fragment.tag)}\n\n", self.__BLACK_BIG_BOLD_UNDERLINED)
             # set txt_before    
-                self.__set_result_text(f"{fragment.txt_before}")                      
+                self.__set_text(f"{fragment.txt_before}")                      
             # set old_text
-                self.__set_result_text(f"{fragment.old_text}", self.__RED_MIDDLE_STRIKED)             
+                self.__set_text(f"{fragment.old_text}", self.__RED_MIDDLE_STRIKED)             
             # set new_text
-                self.__set_result_text(fragment.new_text, self.__BLUE_MIDDLE_BOLD)
+                self.__set_text(fragment.new_text, self.__BLUE_MIDDLE_BOLD)
             # set text_after
-                self.__set_result_text(f"{fragment.txt_after}\n\n")
+                self.__set_text(f"{fragment.txt_after}\n\n")
                          
-    def __set_result_text(self, text: str, style: wx.TextAttr = None) -> None:
+    def __set_text(self, text: str, style: wx.TextAttr = None) -> None:
 
         current_pos = self.__txt_results.GetLastPosition()
         self.__txt_results.AppendText(text)
@@ -193,8 +204,7 @@ class MainFrame(wx.Frame):
 class SettingsFrame(wx.Frame):
 
     def __init__(self, parent):
-        super().__init__(parent=None, title="Настройки", id=wx.ID_ANY, style=wx.DEFAULT_FRAME_STYLE)
-
+        super().__init__(parent=None, title=TITLE_SETTINGS, id=wx.ID_ANY, style=wx.DEFAULT_FRAME_STYLE)
         self.Show()
 
 class PathTxtCtrlValidator(wx.Validator):
@@ -207,7 +217,7 @@ class PathTxtCtrlValidator(wx.Validator):
          textCtrl: wx.TextCtrl = self.GetWindow()
          text: str = textCtrl.GetValue()
          
-         if text == "Файл редактированного документа" or text == "Файл исходного документа":
+         if text == TXT_PATTERN_INIT_TEXT or text == TXT_EDITED_INIT_TEXT:
              wx.MessageBox("Нужно выбрать файл docx!", "Ошибка", style=wx.ICON_WARNING | wx.OK_DEFAULT)
              textCtrl.SetBackgroundColour("pink")
              textCtrl.SetFocus()
